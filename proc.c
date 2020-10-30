@@ -396,6 +396,7 @@ wait(int * status)
 
     // No point waiting if we don't have any children.
     if(!havekids || curproc->killed){
+      *status = -1;
       release(&ptable.lock);
       return -1;
     }
@@ -443,6 +444,7 @@ waitpid(int pid, int* status, int option){
     }
     // If pid does not exist or process is killed or pid is of caller, then return
     if(!exists || currproc->killed || pid == currproc->pid){
+        *status = -1;
         release(&ptable.lock);
         return -1;
     }
