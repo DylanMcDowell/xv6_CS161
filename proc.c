@@ -193,6 +193,7 @@ fork(void)
   if((np->pgdir = copyuvm(curproc->pgdir, curproc->sz)) == 0){
     kfree(np->kstack);
     np->kstack = 0;
+    np->priority = 10;
     np->state = UNUSED;
     return -1;
   }
