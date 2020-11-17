@@ -87,6 +87,7 @@ allocproc(void)
 
 found:
   p->state = EMBRYO;
+  p->priority = 10;
   p->pid = nextpid++;
 
   release(&ptable.lock);
@@ -193,7 +194,7 @@ fork(void)
   if((np->pgdir = copyuvm(curproc->pgdir, curproc->sz)) == 0){
     kfree(np->kstack);
     np->kstack = 0;
-    np->priority = 10;
+    //np->priority = 10;
     np->state = UNUSED;
     return -1;
   }
@@ -497,6 +498,17 @@ kill(int pid)
   return -1;
 }
 
+int
+setpriority(int nprty)
+{
+  return 0;
+}
+
+int
+getpriority()
+{
+  return 0;
+}
 //PAGEBREAK: 36
 // Print a process listing to console.  For debugging.
 // Runs when user types ^P on console.

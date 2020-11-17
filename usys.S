@@ -29,3 +29,6 @@ SYSCALL(getpid)
 SYSCALL(sbrk)
 SYSCALL(sleep)
 SYSCALL(uptime)
+/*New Syscalls*/
+SYSCALL(setpriority)
+SYSCALL(getpriority)
