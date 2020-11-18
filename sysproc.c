@@ -107,8 +107,3 @@ sys_getpriority(void){
     return -1;
   return getpriority(pid);
 }
-
-int
-sys_getpriority(void){
-
-}

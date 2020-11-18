@@ -498,17 +498,47 @@ kill(int pid)
   return -1;
 }
 
+
+//Set's the caller's priority to the int perameter given.
+//If the caller gives a null value(such as a negative or 
+//something greater than 31) no change is made and 
+//returns -1. Otherwise returns 0.
 int
 setpriority(int nprty)
 {
+  struct proc *p = myproc();
+
+  if(nprty < 0 || nprty > 31){
+    return -1;
+  }
+
+  acquire(&ptable.lock);
+  p->priority = nprty;
+  release(&ptable.lock);
   return 0;
 }
 
+
+//returns the priority of process
+//specified by pid. If pid cannot 
+//be found, returns -1.
 int
-getpriority()
+getpriority(int pid)
 {
-  return 0;
+  struct proc *p;
+
+  acquire(&ptable.lock);
+  for(p = ptable.proc; p < &ptable.proc[NPROC]; p++){
+    if(p->pid == pid){
+      release(&ptable.lock);
+      return p->priority;
+    }
+  }
+  release(&ptable.lock);
+  return -1;
 }
+
+
 //PAGEBREAK: 36
 // Print a process listing to console.  For debugging.
 // Runs when user types ^P on console.
