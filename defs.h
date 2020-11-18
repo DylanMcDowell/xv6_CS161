@@ -121,7 +121,7 @@ int             wait(void);
 void            wakeup(void*);
 void            yield(void);
 //NEW
-void            setpriority(int);
+int             setpriority(int);
 int             getpriority(int);
 
 // swtch.S
