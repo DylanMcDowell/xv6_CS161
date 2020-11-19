@@ -87,6 +87,7 @@ allocproc(void)
 
 found:
   p->state = EMBRYO;
+  p->priority = 10;
   p->pid = nextpid++;
 
   release(&ptable.lock);
@@ -193,6 +194,7 @@ fork(void)
   if((np->pgdir = copyuvm(curproc->pgdir, curproc->sz)) == 0){
     kfree(np->kstack);
     np->kstack = 0;
+    //np->priority = 10;
     np->state = UNUSED;
     return -1;
   }
@@ -466,33 +468,48 @@ void
 scheduler(void)
 {
   struct proc *p;
+  struct proc *mp;
   struct cpu *c = mycpu();
   c->proc = 0;
+  int maxp;
   
   for(;;){
     // Enable interrupts on this processor.
     sti();
+    maxp = 32;
+    mp = ptable.proc;
 
     // Loop over process table looking for process to run.
     acquire(&ptable.lock);
     for(p = ptable.proc; p < &ptable.proc[NPROC]; p++){
       if(p->state != RUNNABLE)
         continue;
+      
+      //Move through the whole table to 
+      //find the runnable process with 
+      //highest priority
+      if(p->priority < maxp){
+        mp = p;
+        maxp = p->priority;
+      }
+    }
+    // Switch to chosen process.  It is the process's job
+    // to release ptable.lock and then reacquire it
+    // before jumping back to us.
+    if(mp->state == RUNNABLE){
+      //mp->priority -= 1;
+      c->proc = mp;
+      switchuvm(mp);
+      mp->state = RUNNING;
 
-      // Switch to chosen process.  It is the process's job
-      // to release ptable.lock and then reacquire it
-      // before jumping back to us.
-      c->proc = p;
-      switchuvm(p);
-      p->state = RUNNING;
-
-      swtch(&(c->scheduler), p->context);
+      swtch(&(c->scheduler), mp->context);
       switchkvm();
 
       // Process is done running for now.
       // It should have changed its p->state before coming back.
       c->proc = 0;
     }
+
     release(&ptable.lock);
 
   }
@@ -638,6 +655,47 @@ kill(int pid)
   release(&ptable.lock);
   return -1;
 }
+
+
+//Set's the caller's priority to the int perameter given.
+//If the caller gives a null value(such as a negative or 
+//something greater than 31) no change is made and 
+//returns -1. Otherwise returns 0.
+int
+setpriority(int nprty)
+{
+  struct proc *p = myproc();
+
+  if(nprty < 0 || nprty > 31){
+    return -1;
+  }
+
+  acquire(&ptable.lock);
+  p->priority = nprty;
+  release(&ptable.lock);
+  return 0;
+}
+
+
+//returns the priority of process
+//specified by pid. If pid cannot 
+//be found, returns -1.
+int
+getpriority(int pid)
+{
+  struct proc *p;
+
+  acquire(&ptable.lock);
+  for(p = ptable.proc; p < &ptable.proc[NPROC]; p++){
+    if(p->pid == pid){
+      release(&ptable.lock);
+      return p->priority;
+    }
+  }
+  release(&ptable.lock);
+  return -1;
+}
+
 
 //PAGEBREAK: 36
 // Print a process listing to console.  For debugging.

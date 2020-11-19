@@ -31,3 +31,5 @@ SYSCALL(sleep)
 SYSCALL(uptime)
 /*New Syscalls*/
 SYSCALL(waitpid)
+SYSCALL(setpriority)
+SYSCALL(getpriority)
