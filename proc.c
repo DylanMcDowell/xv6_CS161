@@ -371,9 +371,9 @@ wait(int * status)
   acquire(&ptable.lock);
 
   //Increase priority due to wait
-  //if(curproc->priority != 0){
-    //curproc->priority -= 1;
-  //}
+  if(curproc->priority != 0){
+    curproc->priority -= 1;
+  }
 
   for(;;){
     // Scan through table looking for exited children.
@@ -426,9 +426,9 @@ waitpid(int pid, int* status, int option){
   acquire(&ptable.lock);
 
   //Increase priority due to wait
-  //if(curproc->priority != 0){
-    //curproc->priority -= 1;
-  //}
+  if(curproc->priority != 0){
+    curproc->priority -= 1;
+  }
 
   for(;;){
     //Scan process table for process with pid pid
@@ -510,9 +510,9 @@ scheduler(void)
     // before jumping back to us.
     if(mp->state == RUNNABLE){
       //Decrease priority for running
-      //if(mp->priority != 31){
-        //mp->priority += 1;
-      //}
+      if(mp->priority != 31){
+        mp->priority += 1;
+      }
       c->proc = mp;
       switchuvm(mp);
       mp->state = RUNNING;
