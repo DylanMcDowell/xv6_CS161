@@ -369,6 +369,12 @@ wait(int * status)
   struct proc *curproc = myproc();
   
   acquire(&ptable.lock);
+
+  //Increase priority due to wait
+  //if(curproc->priority != 0){
+    //curproc->priority -= 1;
+  //}
+
   for(;;){
     // Scan through table looking for exited children.
     havekids = 0;
@@ -415,9 +421,15 @@ int
 waitpid(int pid, int* status, int option){
   struct proc *p;
   int exists;
-  struct proc *currproc = myproc();
+  struct proc *curproc = myproc();
 
   acquire(&ptable.lock);
+
+  //Increase priority due to wait
+  //if(curproc->priority != 0){
+    //curproc->priority -= 1;
+  //}
+
   for(;;){
     //Scan process table for process with pid pid
     exists = 0;
@@ -445,14 +457,14 @@ waitpid(int pid, int* status, int option){
       }
     }
     // If pid does not exist or process is killed or pid is of caller, then return
-    if(!exists || currproc->killed || pid == currproc->pid){
+    if(!exists || curproc->killed || pid == curproc->pid){
         *status = -1;
         release(&ptable.lock);
         return -1;
     }
 
     //Wait for specified proccess to exit
-    sleep(currproc, &ptable.lock);
+    sleep(curproc, &ptable.lock);
   }
 }
 
@@ -482,7 +494,7 @@ scheduler(void)
     // Loop over process table looking for process to run.
     acquire(&ptable.lock);
     for(p = ptable.proc; p < &ptable.proc[NPROC]; p++){
-      if(p->state != RUNNABLE || p->state != RUNNING)
+      if(p->state != RUNNABLE)
         continue;
       
       //Move through the whole table to 
@@ -496,8 +508,11 @@ scheduler(void)
     // Switch to chosen process.  It is the process's job
     // to release ptable.lock and then reacquire it
     // before jumping back to us.
-    if(mp->state == RUNNABLE || mp->state == RUNNING){
-      //mp->priority -= 1;
+    if(mp->state == RUNNABLE){
+      //Decrease priority for running
+      //if(mp->priority != 31){
+        //mp->priority += 1;
+      //}
       c->proc = mp;
       switchuvm(mp);
       mp->state = RUNNING;
